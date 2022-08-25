@@ -1,34 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
+import React, {useState, useEffect, useRef} from 'react'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+const STARTING_TIME = 5
+
+const [text, setText] = useState("")
+const [timeRemaining, setTimeReamining] = useState(STARTING_TIME)
+const [isTimeRunning, setIsTimeRunning] = useState(false)
+const [wordCount, setWordCount] = useState(0)
+const textBoxRef = useRef(null)
+
+function handleChange(e) {
+  const {value} = e.target
+  setText(value)
+}
+
+function calculateWordCount(text) {
+  const wordsArr = text.trim().split(" ")
+  return wordsArr.filter(word => word !== "").length
+}
+
+function startGame() {
+  setIsTimeRunning(true)
+  setTimeReamining(STARTING_TIME)
+  setText("")
+  textBoxRef.current.disabled = false
+  textBoxRef.current.focus()
+}
+
+function endGame() {
+    setTimeReamining(false)
+    setWordCount(calculateWordCount(text))
+}
+
+useEffect(() => {
+  if(isTimeRunning && timeRemaining > 0) {
+    setTimeout(() => {
+      setTimeReamining(time => time - 1)
+    }, 1000)
+  } else if(timeRemaining === 0){
+    endGame()
+  }
+}, [timeRemaining, isTimeRunning])
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+    <div>
+        <h1>How fast do you type?</h1>
+        <textarea
+          ref={textBoxRef}
+          onChange= {handleChange}
+          value={text}
+          disabled={!isTimeRunning}
+        />
+        <h4>Time remaining: {timeRemaining} </h4>
+        <button 
+          onClick={startGame}
+          disabled={isTimeRunning}
+        >
+          Start
         </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+        <h1>Word count: {wordCount} </h1>
     </div>
   )
 }
-
-export default App
